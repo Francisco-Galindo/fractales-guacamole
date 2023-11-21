@@ -8,7 +8,6 @@ import (
 	"io"
 	"math"
 	"os"
-	"sync"
 )
 
 type imgData struct {
@@ -19,7 +18,6 @@ type imgData struct {
 }
 
 var palette = make([]color.Color, 0)
-var mu sync.Mutex
 
 const period = 10
 
