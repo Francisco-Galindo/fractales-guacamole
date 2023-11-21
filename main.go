@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"image"
 	"image/color"
 	"image/gif"
 	"io"
 	"math"
 	"os"
+	"time"
 )
 
 type imgData struct {
@@ -18,8 +20,6 @@ type imgData struct {
 }
 
 var palette = make([]color.Color, 0)
-
-const period = 10
 
 func main() {
 	fractal(os.Stdout)
@@ -55,6 +55,7 @@ func fractal(out io.Writer) {
 
 	anim := gif.GIF{LoopCount: nframes}
 
+	start := time.Now()
 	for i := 0; i < nframes; i++ {
 		rect := image.Rect(0, 0, size, size)
 		img := image.NewPaletted(rect, palette)
@@ -89,6 +90,8 @@ func fractal(out io.Writer) {
 		anim.Image = append(anim.Image, img)
 	}
 	gif.EncodeAll(out, &anim)
+
+	fmt.Fprintln(os.Stderr, time.Since(start).Seconds())
 }
 
 func renderColumn(x int, img *image.Paletted, data imgData, ch chan<- bool) {
