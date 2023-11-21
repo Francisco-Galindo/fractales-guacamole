@@ -21,6 +21,8 @@ type imgData struct {
 var palette = make([]color.Color, 0)
 var mu sync.Mutex
 
+const period = 10
+
 func main() {
 	fractal(os.Stdout)
 }
@@ -30,16 +32,16 @@ func fractal(out io.Writer) {
 	nthreadsPtr := flag.Uint("t", 1, "Número de hilos a usar")
 	sizePtr := flag.Uint("s", 256, "Tamaño del GIF")
 	nframesPtr := flag.Uint("n", 256, "Número de frames del GIF")
+	periodPtr := flag.Uint("p", 10, "Periodo de oscilación de la fase")
 
 	flag.Parse()
 
 	nthreads := int(*nthreadsPtr)
 	size := int(*sizePtr)
 	nframes := int(*nframesPtr)
+	period := int(*periodPtr)
 
-	const seconds = 10
-
-	delay := seconds * 100 / nframes
+	delay := period * 100 / nframes
 	dphase := float64(2.0*math.Pi) / float64(nframes)
 
 	palette = append(palette, color.Black)
@@ -48,7 +50,7 @@ func fractal(out io.Writer) {
 	}
 
 	mod := 0.75
-	phase := math.Pi / 2 + 0.3
+	phase := math.Pi/2 + 0.3
 
 	maxIterations := 256
 	scale := 1.0 / (float64(size) / 2)
@@ -123,8 +125,9 @@ func computeIterations(x, y, cx, cy float64, maxIteration int) int {
 }
 
 func computeNext(currX, currY, cx, cy float64) (x, y float64) {
+	// z_n = z_n-1^2 + c
 	x = currX*currX - currY*currY + cx
-	y = 2.0 * currX * currY + cy
+	y = 2.0*currX*currY + cy
 
 	return x, y
 }
