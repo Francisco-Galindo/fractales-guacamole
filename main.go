@@ -48,7 +48,7 @@ func fractal(out io.Writer) {
 	}
 
 	mod := 0.75
-	phase := 0.0
+	phase := math.Pi / 2 + 0.3
 
 	maxIterations := 256
 	scale := 1.0 / (float64(size) / 2)
