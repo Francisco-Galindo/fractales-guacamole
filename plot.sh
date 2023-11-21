@@ -3,6 +3,7 @@
 gnuplot << EOF
 set term png
 set output "$2"
+set title "Rendimiento en función del número de hilos"
 set xlabel "Número de hilos"
 set ylabel "Tiempo de ejecución"
 set yrange[0:]
