@@ -17,7 +17,7 @@ done
 
 printf "No. de hilos\tTiempo promedio\n"
 i=1
-while [ $i -le 16 ]
+while [ $i -le 32 ]
 do
 	total=0
 	for j in $(seq $iterations)
