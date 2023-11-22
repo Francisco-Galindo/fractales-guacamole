@@ -16,41 +16,47 @@ type imgData struct {
 	size          int
 	scale         float64
 	cx, cy        float64
-	maxIterations int
 }
 
-var palette = make([]color.Color, 0)
+var (
+	palette                                     = make([]color.Color, 0)
+	nthreadsPtr, sizePtr, nframesPtr, periodPtr *uint
+	nthreads                                    int
+)
+
+const (
+	maxIterations = 256
+	mod           = 0.75
+)
 
 func main() {
-	fractal(os.Stdout)
-}
-
-func fractal(out io.Writer) {
-
-	nthreadsPtr := flag.Uint("t", 1, "Número de hilos a usar")
-	sizePtr := flag.Uint("s", 256, "Tamaño del GIF")
-	nframesPtr := flag.Uint("n", 256, "Número de frames del GIF")
-	periodPtr := flag.Uint("p", 10, "Periodo de oscilación de la fase")
+	nthreadsPtr = flag.Uint("t", 1, "Número de hilos a usar")
+	sizePtr = flag.Uint("s", 256, "Tamaño del GIF")
+	nframesPtr = flag.Uint("n", 256, "Número de frames del GIF")
+	periodPtr = flag.Uint("p", 10, "Periodo de oscilación de la fase")
 
 	flag.Parse()
-
-	nthreads := int(*nthreadsPtr)
-	size := int(*sizePtr)
-	nframes := int(*nframesPtr)
-	period := int(*periodPtr)
-
-	delay := period * 100 / nframes
-	dphase := float64(2.0*math.Pi) / float64(nframes)
 
 	palette = append(palette, color.Black)
 	for i := 1; i <= 0xFF; i++ {
 		palette = append(palette, color.RGBA{0, uint8(i), 0, 0xFF})
 	}
 
-	mod := 0.75
-	phase := math.Pi/2 + 0.3
+	nthreads = int(*nthreadsPtr)
 
-	maxIterations := 256
+	fractal(os.Stdout)
+}
+
+func fractal(out io.Writer) {
+	size := int(*sizePtr)
+
+	nframes := int(*nframesPtr)
+	period := int(*periodPtr)
+	delay := period * 100 / nframes
+
+	phase := math.Pi/2 + 0.3
+	dphase := float64(2.0*math.Pi) / float64(nframes)
+
 	scale := 1.0 / (float64(size) / 2)
 
 	anim := gif.GIF{LoopCount: nframes}
@@ -68,7 +74,6 @@ func fractal(out io.Writer) {
 		data.cy = cy
 		data.size = size
 		data.scale = scale
-		data.maxIterations = maxIterations
 
 		var ch = make(chan bool, nthreads)
 
@@ -99,11 +104,11 @@ func renderColumn(x int, img *image.Paletted, data imgData, ch chan<- bool) {
 		px := float64(x-data.size/2) * data.scale
 		py := float64(y-data.size/2) * data.scale
 
-		iterations := computeIterations(px, py, data.cx, data.cy, data.maxIterations)
+		iterations := computeIterations(px, py, data.cx, data.cy, maxIterations)
 
 		index := uint8(iterations)
-		if data.maxIterations != len(palette) {
-			index = uint8((float64(iterations) / float64(data.maxIterations)) * float64((len(palette))))
+		if maxIterations != len(palette) {
+			index = uint8((float64(iterations) / float64(maxIterations)) * float64((len(palette))))
 			index = max(0, index-1)
 		}
 		img.SetColorIndex(x, y, index)
